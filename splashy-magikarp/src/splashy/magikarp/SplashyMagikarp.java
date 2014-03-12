@@ -6,6 +6,8 @@
 
 package splashy.magikarp;
 
+import javax.swing.JFrame;
+
 /**
  *
  * @author tonystark
@@ -17,6 +19,9 @@ public class SplashyMagikarp {
      */
     public static void main(String[] args) {
         // TODO code application logic here
+        programa juego = new programa();
+        juego.setVisible(true);
+        juego.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     }
     
 }
