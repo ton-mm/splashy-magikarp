@@ -32,6 +32,15 @@ import java.io.IOException;
 import java.util.Vector;
 import java.io.BufferedReader;
 import java.util.LinkedList;
+import javax.swing.JOptionPane;
+
+import java.awt.BorderLayout;
+
+import javax.swing.JList;
+import javax.swing.JOptionPane;
+import java.awt.event.ActionListener;
+import java.awt.event.ActionEvent;
+import javax.swing.JButton;
 
 public class programa extends JFrame implements Runnable, KeyListener,MouseListener,MouseMotionListener {
  
@@ -78,6 +87,14 @@ public class programa extends JFrame implements Runnable, KeyListener,MouseListe
     private boolean inicio = false;
     private boolean reinicio = false;
     
+    private boolean choque = false;
+    
+    private int velocidadpipe = 3;
+    private boolean v1 = false;
+    private boolean v2 = false;
+    private boolean v3 = false;
+    private boolean v4 = false;
+    private boolean sonido = true;
     
     private LinkedList<Pipeup> listaup;
     private LinkedList<Pipedown> listadown;
@@ -90,10 +107,15 @@ public class programa extends JFrame implements Runnable, KeyListener,MouseListe
     private boolean guardar = false; //bool para saber si se quiere guardar el juego
     private boolean cargar = false; //bool para saber si se quiere cargar el juego
     
+    private boolean space = false;
+    
     
     //Variables de control de tiempo de la animación
     private long tiempoActual;
     private long tiempoInicial;
+    
+    private JFrameScore jframeScore;    //Frame para desplegar el puntaje.
+    private JList listaScore;    //Lista para desplegar el puntaje.
     
     public programa() {
         init();
@@ -157,7 +179,7 @@ public class programa extends JFrame implements Runnable, KeyListener,MouseListe
             pipeup = new Pipeup(350 + 350 * i,(int) (Math.random() * (getHeight() - getHeight() / 2) + 200) );
             listaup.addLast(pipeup);
             
-            pipedown = new Pipedown(350 + 350 * i, pipeup.getPosY() - 500);
+            pipedown = new Pipedown(350 + 350 * i, pipeup.getPosY() - 550);
             listadown.addLast(pipedown);
             
         }
@@ -183,7 +205,7 @@ public class programa extends JFrame implements Runnable, KeyListener,MouseListe
         //Guarda el tiempo actual del sistema 
         
         
-         while (vidas > 0) {
+         while (true) {
             if (!pausa) {
                 actualiza();
                 checaColision();
@@ -197,10 +219,43 @@ public class programa extends JFrame implements Runnable, KeyListener,MouseListe
             }
 
         }
+         
+          
+         
+         
 
     }
     
     public void actualiza() {
+        
+        creaJFrame();
+        
+        if(vidas == 0) {
+        // pide el nombre de usuario
+            
+            vidas = 1;
+            
+                String nombre = JOptionPane.showInputDialog("Cual es tu nombre?");
+                JOptionPane.showMessageDialog(null, 
+                              "El puntaje de " + nombre + " es: " + score, "PUNTAJE", 
+                              JOptionPane.PLAIN_MESSAGE);
+                reinicio = true;
+                
+                try {
+
+                      leeArchivo();    //lee el contenido del archivo
+                      //Agrega el contenido del nuevo puntaje al vector.
+                      vec.add(new Puntaje(nombre,score));
+                      ordenaVector();
+                      //Graba el vector en el archivo.
+                      grabaArchivo();
+                      
+                } catch(IOException e) {
+
+                      System.out.println("Error en " + e.toString());
+                }
+        
+        }
         
         long tiempoTranscurrido = System.currentTimeMillis() - tiempoActual;
         
@@ -224,6 +279,30 @@ public class programa extends JFrame implements Runnable, KeyListener,MouseListe
             velocidad += 1;
         }
         
+        if(score == 10 && !v1)
+       {
+          velocidadpipe+= 3;
+          v1 = true;
+       }
+       else if(score == 20 && !v2)
+       {
+           velocidadpipe+= 3;
+           v2 = true;
+       }
+       else if(score == 30&& !v3)
+       {
+           velocidadpipe+= 3;
+           v3 = true;
+       }
+       else if(score == 40&& !v4)
+       {
+           velocidadpipe+= 3;
+           v4 = true;
+       }
+        
+        
+        
+        
         if(!pausa)
         {
             if(clic)
@@ -241,7 +320,15 @@ public class programa extends JFrame implements Runnable, KeyListener,MouseListe
             } 
         }
         
-        
+        for(int i = 0; i < 3 ; i++)
+            {
+                 pipeup  = (Pipeup) (listaup.get(i));
+                 if(magikarp.getPosX() >= pipeup.getPosX() && magikarp.getPosX() <= pipeup.getPosX() + 2 )
+                 {
+                     score++;
+                 }
+
+            }
         
         
         
@@ -269,11 +356,11 @@ public class programa extends JFrame implements Runnable, KeyListener,MouseListe
             for(int i = 0; i < 3 ; i++)
             {
                  pipeup  = (Pipeup) (listaup.get(i));
-                 pipeup.setPosX(pipeup.getPosX() - 3);
+                 pipeup.setPosX(pipeup.getPosX() - velocidadpipe);
 
 
                  pipedown  = (Pipedown) (listadown.get(i));
-                 pipedown.setPosX(pipedown.getPosX() - 3);
+                 pipedown.setPosX(pipedown.getPosX() - velocidadpipe);
 
             }
         }
@@ -288,14 +375,14 @@ public class programa extends JFrame implements Runnable, KeyListener,MouseListe
             
             for(int i = 0; i < 3 ; i++)
             {
-                pipeup = new Pipeup(350 + 350 * i, 500);
+                pipeup = new Pipeup(350 + 350 * i,(int) (Math.random() * (getHeight() - getHeight() / 2) + 200) );
                 listaup.addLast(pipeup);
-
-                pipedown = new Pipedown(350 + 350 * i, -200);
+            
+                pipedown = new Pipedown(350 + 350 * i, pipeup.getPosY() - 500);
                 listadown.addLast(pipedown);
             
             }
-            
+            score = 0;
             reinicio = false;
             inicio = false;
             clic = false;
@@ -312,12 +399,22 @@ public class programa extends JFrame implements Runnable, KeyListener,MouseListe
     public void checaColision() {
         
         if (magikarp.getPosY() + magikarp.getAlto() >= getHeight()) {
-            reinicio = true;
+            //reinicio = true;
             //int dposy = getHeight() / 2 + getHeight() / 8;
             //magikarp.setPosX(50);
             //magikarp.setPosY(dposy);
+            choque = true;
+            vidas--;
         }
-        
+        if (magikarp.getPosY() <= 0) {
+            //reinicio = true;
+            //int dposy = getHeight() / 2 + getHeight() / 8;
+            //magikarp.setPosX(50);
+            //magikarp.setPosY(dposy);
+            choque = true;
+            vidas--;
+        }
+     /*   
         for (int i = 0; i < listaup.size(); i++) {
             Pipeup pipeup = (Pipeup) listaup.get(i);
         
@@ -327,11 +424,28 @@ public class programa extends JFrame implements Runnable, KeyListener,MouseListe
             Pipedown pipedown = (Pipedown) listadown.get(i);
         
         }
-       
+    */   
         
         
+        for (int i = 0; i < listaup.size(); i++) {
+            Pipeup pipeup = (Pipeup) listaup.get(i);
+            if(magikarp.intersecta(pipeup))
+            {
+                //reinicio = true;
+                vidas--;
+            }
         
+        }
         
+        for (int i = 0; i < listadown.size(); i++) {
+            Pipedown pipedown = (Pipedown) listadown.get(i);
+            if(magikarp.intersecta(pipedown))
+            {
+                //reinicio = true;
+                vidas--;
+            }
+        }
+     
        /*
         if(magikarp.getPosX() + magikarp.getAncho() >= getWidth() || magikarp.getPosX() <= 0)
         {
@@ -505,8 +619,36 @@ public class programa extends JFrame implements Runnable, KeyListener,MouseListe
      *
      * @throws IOException
      */
-    public void leeArchivo()  {
-          try
+    public void leeArchivo()  throws IOException{
+        
+        
+        BufferedReader fileIn;
+    	try{
+    		fileIn = new BufferedReader(new FileReader(nombreArchivo));
+    	} catch (FileNotFoundException e){
+    		File puntos = new File(nombreArchivo);
+    		PrintWriter fileOut = new PrintWriter(puntos);
+    		//fileOut.println("100,demo");
+                fileOut.println("");
+    		fileOut.close();
+    		fileIn = new BufferedReader(new FileReader(nombreArchivo));
+    	}
+    	String dato = fileIn.readLine();
+
+    	if (!dato.equals("")){
+    		while(dato != null){
+    			arr = dato.split(",");
+    			int num = (Integer.parseInt(arr[0]));
+    			String nom = arr[1];
+    			vec.add(new Puntaje(nom, num));
+    			dato = fileIn.readLine();
+    		}
+    	}
+    	fileIn.close();
+        
+        
+        /*
+        try
           {
                 BufferedReader fileIn;
                 try {
@@ -551,6 +693,9 @@ public class programa extends JFrame implements Runnable, KeyListener,MouseListe
               
               
           }
+        
+        */
+        
         }
     
     /**
@@ -561,15 +706,42 @@ public class programa extends JFrame implements Runnable, KeyListener,MouseListe
     public void grabaArchivo() throws IOException{
         
         //if(guardar) {
-            
-            
+            PrintWriter fileOut = new PrintWriter(new FileWriter(nombreArchivo));
+    	for (int i=0; i<vec.size(); i++) {
+    		Puntaje x;
+    		x = (Puntaje) vec.get(i);
+    		fileOut.println(x.toString());
+    	}
+    	fileOut.close();
+            /* 
             PrintWriter fileOut = new PrintWriter(new FileWriter(nombreArchivo));
             fileOut.println(""+velocidadx+","+velocidady+","+angulo+","+tiempo+","+vidas+","+magikarp.getPosX()+","+magikarp.getPosY()+","+pipeup.getPosX()+","+pipeup.getPosY());
             fileOut.close();
-           
+           */
            // guardar = false;
         //}
    	
+    }
+    
+    /**
+	 * Metodo que ordena el vector
+	 */
+    public void ordenaVector(){
+    	for (int i=0; i<vec.size()-1 ;i++) {
+    		for (int j=i; j<vec.size(); j++)
+    			if (((Puntaje) vec.get(i)).getPuntaje() < ((Puntaje) vec.get(j)).getPuntaje())	{
+    				Puntaje p = (Puntaje) vec.get(i);
+    				vec.set(i, vec.get(j));
+    				vec.set(j, p);
+    			}			
+    	}
+    }
+
+	/**
+	 * Metodo que crea el frame para desplegar el score.
+	 */
+    public void creaJFrame(){
+    	jframeScore = new JFrameScore();
     }
     
     
@@ -586,6 +758,18 @@ public class programa extends JFrame implements Runnable, KeyListener,MouseListe
             //pausa = !pausa;
         }
         
+        if (e.getKeyCode() == KeyEvent.VK_F) //Presiono tecla I
+        {    
+            jframeScore.setVisible(true);
+            //pausa = !pausa;
+        }
+        
+        if (e.getKeyCode() == KeyEvent.VK_S) //Presiono tecla C
+        {   
+            sonido = !sonido;
+        }
+        
+/*        
         if (e.getKeyCode() == KeyEvent.VK_G) //Presiono tecla G
         {  
             try{
@@ -602,13 +786,20 @@ public class programa extends JFrame implements Runnable, KeyListener,MouseListe
         {   
             leeArchivo();
         }
-        
+*/        
         if (e.getKeyCode() == KeyEvent.VK_SPACE) //Presiono tecla C
         {   
            magikarp.setPosY(magikarp.getPosY() - 15);
            tiempo = 0.0;
            clic = true;
            inicio = true; 
+           space = true;
+           
+           if(sonido)
+           {
+                teleport.play();
+           }
+           
            
         }
        
@@ -662,17 +853,20 @@ public class programa extends JFrame implements Runnable, KeyListener,MouseListe
  
      public void mouseClicked(MouseEvent e) {
        
+         if(sonido)
+           {
+                teleport.play();
+           }
+         
          if(!pausa)
          {
              x1 = e.getX();
-        y1 = e.getY();
-        if(magikarp.tiene(x1, y1))
-        {
-            clic = true;
-        }
+             y1 = e.getY();
+            magikarp.setPosY(magikarp.getPosY() - 15);
+           tiempo = 0.0;
+           clic = true;
+           inicio = true; 
          }
-        
-        
     }
  
     @Override
@@ -701,6 +895,25 @@ public class programa extends JFrame implements Runnable, KeyListener,MouseListe
         
     }
     
-        
     
+    private class JFrameScore extends JFrame 
+    {
+    	public JFrameScore() {
+    		JButton boton = new JButton("SALIR");
+    		listaScore = new JList(vec);
+    		add(listaScore, BorderLayout.CENTER);
+    		add(boton, BorderLayout.SOUTH);
+    		setSize(200,500);
+    		boton.addActionListener( new ActionListener() { 
+					public void actionPerformed(ActionEvent e) { 
+						//pause = false;
+						//musica.play();
+						setVisible(false);
+						repaint();
+					}
+			}); 
+
+    	}
+    }
+
 }
