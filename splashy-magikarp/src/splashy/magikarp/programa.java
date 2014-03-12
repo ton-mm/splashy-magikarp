@@ -76,8 +76,11 @@ public class programa extends JFrame implements Runnable, KeyListener,MouseListe
     private boolean inst = false;
     private boolean pclic = false;
     private boolean inicio = false;
+    private boolean reinicio = false;
     
-    private LinkedList listaup,listadown;
+    
+    private LinkedList<Pipeup> listaup;
+    private LinkedList<Pipedown> listadown;
     
     //variables para el manejo de archivos
     private Vector vec;    // Objeto vector para agregar el puntaje.
@@ -106,12 +109,12 @@ public class programa extends JFrame implements Runnable, KeyListener,MouseListe
         
         
         direccion = 0;
-        this.setSize(350, 630);
+        this.setSize(350, 500);
         URL eURL = this.getClass().getResource("Imagenes/1.gif");
         int dposy = getHeight() / 2 + getHeight() / 8;
         magikarp = new Magikarp(50, dposy );
-        //magikarp.setPosX((int) (getWidth()/2));
-        //magikarp.setPosY(getHeight());
+        //magikarp.setPosX(50);
+        //magikarp.setPosY(getHeight() / 2 + getHeight() / 8);
         int posrX =  getWidth()/2 ;    //posision x es tres cuartos del applet
         int posrY =   getHeight() ;  //posision y es tres cuartos del applet
         URL rURL = this.getClass().getResource("Imagenes/pipe.png");
@@ -151,10 +154,10 @@ public class programa extends JFrame implements Runnable, KeyListener,MouseListe
         
         for(int i = 0; i < 3 ; i++)
         {
-            pipeup = new Pipeup(350 + 350 * i, 500);
+            pipeup = new Pipeup(350 + 350 * i,(int) (Math.random() * (getHeight() - getHeight() / 2) + 200) );
             listaup.addLast(pipeup);
             
-            pipedown = new Pipedown(350 + 350 * i, -200);
+            pipedown = new Pipedown(350 + 350 * i, pipeup.getPosY() - 500);
             listadown.addLast(pipedown);
             
         }
@@ -225,9 +228,7 @@ public class programa extends JFrame implements Runnable, KeyListener,MouseListe
         {
             if(clic)
             {
-            
-                
-        
+
                 //velocidad de y
                 velocidady = -5 + 4 * tiempo;
             
@@ -277,6 +278,29 @@ public class programa extends JFrame implements Runnable, KeyListener,MouseListe
             }
         }
         
+        if(reinicio)
+        {
+            magikarp.setPosX(50);
+            magikarp.setPosY(getHeight() / 2 + getHeight() / 8);
+            
+            listadown.clear();
+            listaup.clear();
+            
+            for(int i = 0; i < 3 ; i++)
+            {
+                pipeup = new Pipeup(350 + 350 * i, 500);
+                listaup.addLast(pipeup);
+
+                pipedown = new Pipedown(350 + 350 * i, -200);
+                listadown.addLast(pipedown);
+            
+            }
+            
+            reinicio = false;
+            inicio = false;
+            clic = false;
+        }
+        
         
         
     
@@ -288,16 +312,25 @@ public class programa extends JFrame implements Runnable, KeyListener,MouseListe
     public void checaColision() {
         
         if (magikarp.getPosY() + magikarp.getAlto() >= getHeight()) {
-            vidas--;
+            reinicio = true;
             //int dposy = getHeight() / 2 + getHeight() / 8;
             //magikarp.setPosX(50);
             //magikarp.setPosY(dposy);
         }
         
-        if(magikarp.intersecta(pipedown) && pipedown.getPosY() + pipedown.getAlto() - 15 >= magikarp.getPosY())
-        {
-            vidas--;
+        for (int i = 0; i < listaup.size(); i++) {
+            Pipeup pipeup = (Pipeup) listaup.get(i);
+        
         }
+        
+        for (int i = 0; i < listadown.size(); i++) {
+            Pipedown pipedown = (Pipedown) listadown.get(i);
+        
+        }
+       
+        
+        
+        
         
        /*
         if(magikarp.getPosX() + magikarp.getAncho() >= getWidth() || magikarp.getPosX() <= 0)
